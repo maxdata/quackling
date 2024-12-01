@@ -15,7 +15,29 @@ from docling_core.types import Document as DLDocument
 from docling_core.types import Ref, Table
 from pydantic import BaseModel, PositiveInt
 
-from quackling.core.chunkers.base import BaseChunker, Chunk, ChunkWithMetadata
+
+from abc import ABC, abstractmethod
+from typing import Iterator
+
+from docling_core.types import BoundingBox, Document
+from pydantic import BaseModel
+
+
+class Chunk(BaseModel):
+    path: str
+    text: str
+
+
+class ChunkWithMetadata(Chunk):
+    page: int | None
+    bbox: BoundingBox | None
+
+
+class BaseChunker(BaseModel, ABC):
+
+    @abstractmethod
+    def chunk(self, dl_doc: Document, **kwargs) -> Iterator[Chunk]:
+        raise NotImplementedError()
 
 _logger = logging.getLogger(__name__)
 

@@ -7,8 +7,7 @@ from langchain_core.documents import Document as LCDocument
 from pydantic import BaseModel
 from typing import Iterator, Iterable, List
 
-from quackling.core.chunkers.base import BaseChunker
-from quackling.core.chunkers.hierarchical_chunker import HierarchicalChunker
+from .hierarchical_chunker import HierarchicalChunker, BaseChunker
 
 
 class DocumentMetadata(BaseModel):
@@ -20,7 +19,7 @@ class ChunkDocMetadata(BaseModel):
     path: str
 
 
-class BaseDoclingLoader(BaseLoader):
+class DoclingLoader(BaseLoader):
     class ParseType(str, Enum):
         MARKDOWN = "markdown"
         JSON = "json"
