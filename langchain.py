@@ -5,12 +5,7 @@ from docling_core.types import Document as DLDocument
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document as LCDocument
 from pydantic import BaseModel
-from typing import Iterator
-from typing import Iterable, List
-
-from docling_core.types import Document as DLDocument
-from langchain_core.documents import Document as LCDocument
-from pydantic import BaseModel
+from typing import Iterator, Iterable, List
 
 from quackling.core.chunkers.base import BaseChunker
 from quackling.core.chunkers.hierarchical_chunker import HierarchicalChunker
@@ -18,7 +13,7 @@ from quackling.core.chunkers.hierarchical_chunker import HierarchicalChunker
 
 class DocumentMetadata(BaseModel):
     dl_doc_hash: str
-    # source: str
+
 
 class ChunkDocMetadata(BaseModel):
     dl_doc_id: str
@@ -50,17 +45,14 @@ class BaseDoclingLoader(BaseLoader):
         )
         return lc_doc
 
-
-class DoclingPDFLoader(BaseDoclingLoader):
-
-    def lazy_load(self) -> Iterator[LCDocument]:
+    def lazy_load_pdf(self) -> Iterator[LCDocument]:
         for source in self._file_paths:
             dl_doc = self._converter.convert_single(source).output
             lc_doc = self._create_lc_doc_from_dl_doc(dl_doc=dl_doc)
             yield lc_doc
 
-class HierarchicalJSONSplitter:
 
+class HierarchicalJSONSplitter:
     def __init__(
         self,
         chunker: BaseChunker | None = None,
@@ -68,10 +60,9 @@ class HierarchicalJSONSplitter:
         self.chunker: BaseChunker = chunker or HierarchicalChunker()
 
     def split_documents(self, documents: Iterable[LCDocument]) -> List[LCDocument]:
-
         all_chunk_docs: list[LCDocument] = []
         for doc in documents:
-            lc_doc: LCDocument = LCDocument.parse_obj(doc)
+            lc_doc: LCDocument = LCDocument.model_validate(doc)
             dl_doc: DLDocument = DLDocument.model_validate_json(lc_doc.page_content)
             chunk_iter = self.chunker.chunk(dl_doc=dl_doc)
             chunk_docs = [
@@ -86,4 +77,4 @@ class HierarchicalJSONSplitter:
             ]
             all_chunk_docs.extend(chunk_docs)
 
-        return all_chunk_docs 
+        return all_chunk_docs
